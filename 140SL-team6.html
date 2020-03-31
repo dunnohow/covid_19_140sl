@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta name="generator" content="pandoc" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+<!--
+Font-awesome icons ie github or twitter
+-->
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/brands.css" integrity="sha384-n9+6/aSqa9lBidZMRCQHTHKJscPq6NW4pCQBiMmHdUCvPN8ZOg2zJJTkC7WIezWv" crossorigin="anonymous">
+
+<!--
+Google fonts api stuff
+-->
+
+
+
+<title>Understanding the Ongoing Coronavirus Outbreak</title>
+
+
+
+
+
+<style>
+@page {
+size: 45in 38in;
+margin: 0;
+padding: 0;
+}
+body {
+margin: 0;
+font-size: 45px;
+width: 45in;
+height: 38in;
+padding: 0;
+text-align: justify;
+font-family: Palatino;
+}
+.poster_wrap {
+width: 45in;
+height: 38in;
+padding: 0cm;
+}
+.title_container {
+width: 45in;
+height: calc(38in * 0.15);
+overflow: hidden;
+background-color: #005587;
+border: 0.5cm solid #FFFFFF;
+}
+.logo_left {
+float: left;
+width: 10%;
+height: 100%;
+background-color: #005587;
+display: flex;
+align-items: center;
+justify-content: center;
+}
+.logo_right {
+float: right;
+width: 10%;
+height: 100%;
+background-color: #005587;
+display: flex;
+align-items: center;
+justify-content: center;
+}
+.poster_title {
+text-align: center;
+position: relative;
+float: left;
+width: 80%;
+height: 100%;
+color: #FFFFFF;
+top: 50%;
+transform: translateY(-50%);
+-webkit-transform: translateY(-50%);
+}
+#title {
+font-family: Palatino;
+}
+/* unvisited link */
+a:link {
+color: #cc0000;
+}
+.mybreak {
+  break-before: column;
+}
+/* visited link */
+a:visited {
+color: #cc0000;
+}
+
+/* mouse over link */
+a:hover {
+color: #cc0000;
+}
+
+/* selected link */
+a:active {
+color: #cc0000;
+}
+.poster_body {
+-webkit-column-count: 4; /* Chrome, Safari, Opera */
+-moz-column-count: 4; /* Firefox */
+column-count: 4;
+-webkit-column-fill: auto;
+-moz-column-fill: auto;
+column-fill: auto;
+-webkit-column-rule-width: 1mm;
+-moz-column-rule-width: 1mm;
+column-rule-width: 1mm;
+-webkit-column-rule-style: dashed;
+-moz-column-rule-style: dashed;
+column-rule-style: dashed;
+-webkit-column-rule-color: #005587;
+-moz-column-rule-color: #005587;
+column-rule-color: #005587;
+column-gap: 0.5cm;
+padding-left: calc(0.5cm / 2);
+padding-right: calc(0.5cm / 2);
+height: 100%;
+color: #000000
+background-color: #ffffff;
+}
+.poster_title h1 {
+font-size: 75pt;
+margin: 0;
+border: 0;
+font-weight: normal;
+}
+.poster_body_wrap{
+width: calc(45in + 0.5cm + 0.5cm);
+height: calc(38in * 0.83);
+padding-top: calc(38in * 0.005);
+padding-bottom: calc(38in * 0.01);
+background-color: #ffffff;
+}
+.poster_title h3 {
+color: #FFFFFF;
+font-size: 50pt;
+margin: 0;
+border: 0;
+font-weight: normal;
+}
+.poster_title h3 > sup {
+  font-size: 35pt;
+  margin-left: 0.02em;
+}
+.poster_title h5 {
+color: #FFFFFF;
+font-size: 35pt;
+margin: 0;
+border: 0;
+font-weight: normal;
+}
+img {
+margin-top: 2cm;
+margin-bottom: 0;
+}
+.section {
+  padding: 0.2em;
+}
+.poster_body h1 {
+text-align: center;
+color: #FFFFFF;
+font-size: 65pt;
+border: 2mm solid #005587;
+background-color: #005587;
+border-radius: 4mm 0mm;
+margin-top: 2mm;
+margin-bottom: 2mm;
+font-weight: normal;
+}
+.poster_body h2 {
+color: #000000;
+font-size: 40pt;
+padding-left: 4mm;
+font-weight: normal;
+}
+.span {
+width: 200%;
+}
+/* center align leaflet map,
+from https://stackoverflow.com/questions/52112119/center-leaflet-in-a-rmarkdown-document */
+.html-widget {
+margin: auto;
+position: sticky;
+margin-top: 2cm;
+margin-bottom: 2cm;
+}
+.leaflet.html-widget.html-widget-static-bound.leaflet-container.leaflet-touch.leaflet-fade-anim.leaflet-grab.leaflet-touch-drag.leaflet-touch-zoom {
+position: sticky;
+width: 100%;
+}
+pre.sourceCode.r {
+background-color: #dddddd40;
+border-radius: 4mm;
+padding: 4mm;
+width: 75%;
+/* align-items: center; */
+margin: auto;
+padding-left: 2cm;
+}
+code.sourceCode.r{
+background-color: transparent;
+font-size: 20pt;
+border-radius: 2mm;
+}
+.caption {
+font-size: 25pt;
+}
+.table caption {
+font-size: 25pt;
+padding-bottom: 3mm;
+
+}
+code {
+font-size: 1em;
+font-family: monospace;
+background-color: #FFFFFF24;
+color: #005587;
+padding: 1.2mm;
+border-radius: 2mm;
+}
+.poster_title code {
+font-size: 1em;
+}
+table {
+font-size: 40px;
+margin: auto;
+border-top: 3px solid #666;
+border-bottom: 3px solid #666;
+}
+table thead th {
+border-bottom: 3px solid #ddd;
+}
+td {
+padding: 8px;
+}
+th {
+padding: 15px;
+}
+caption {
+margin-bottom: 10px;
+}
+.poster_body p {
+margin-right: 4mm;
+margin-left: 4mm;
+margin-top: 6mm;
+margin-bottom: 10mm;
+}
+.poster_body ol {
+margin-right: 4mm;
+margin-left: 4mm;
+}
+#ul {
+margin-right: 4mm;
+margin-left: 4mm;
+}
+.references p {
+font-size: 20pt;
+}
+.orcid img {
+  width: 1em;
+}
+</style>
+</head>
+<body>
+
+
+<div class="poster_wrap">
+<div class="title_container">
+<!-- Left Logo  -->
+<div class="logo_left">
+<img src= 'campus-logo.png' style="width: 80%">
+</div>
+<!-- Poster Title -->
+<div class= "poster_title">
+<h1 id="title">Understanding the Ongoing Coronavirus Outbreak</h1>
+<h3 id="author">Keith Atienza<sup>1</sup>, Un Young Chung<sup>1</sup>, Jeanette Lin<sup>1</sup>, Josh Park<sup>1</sup>, Junghwan Park<sup>1</sup>, Krystal Xu<sup>1</sup></h3><br>
+<h5 id="affiliation"><sup>1</sup> <br> <sup></sup> University of California, Los Angeles</h5>
+</div>
+<!-- Right Logo  -->
+<div class="logo_right">
+</div>
+</div>
+
+<div class='poster_body_wrap'>
+<div class='poster_body'>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p><strong>Background</strong></p>
+<p>The 2019-2020 coronavirus outbreak is an ongoing worldwide pandemic caused by the novel coronavirus disease (COVID-19). The disease has been detected in at least 87 countries, with almost 100,000 cases, as of March 5, 2020. As a respiratory illness, COVID-19’s ability to easily spread from person-to-person and the severity of its symptoms have caused major health concerns.</p>
+<p><strong>Objective</strong></p>
+<p>By assessing the risks and forecasting the spread of COVID-19, our main goal is to investigate the spread of the disease in different countries, find patterns within the multitude of recorded cases, and understand the threats associated with the virus at its current state and the future.</p>
+</div>
+<div id="insights" class="section level1">
+<h1>Insights</h1>
+<p>The median age of people with confirmed cases of the disease is 51 years old, with most affecting those in their 30s to 60s.</p>
+<p>Elderly people are more at risk of death, with the median age around 70 years old. While fever, cough, and sore throat are listed as the most common symptoms of the disease, around 65.07% of the deaths occurred due to another associated symptom, pneumonia. In comparison, only about 2.5% of patients who recovered had pneumonia.</p>
+<p><img src="image1.png" width="1000" /></p>
+<p>The symptoms typically manifest approximately after a week or two after exposure to the virus. Those who died tend to make a visit to a hospital after symptom onset less quickly than those who recovered. We found that the average number of days that people make a visit to the hospital after seeing symptoms has not decreased over time.</p>
+<p>With concerns growing, information about previous pandemics is important to put the current coronavirus outbreak into perspective. The number of deaths from coronavirus has already exceeded the deaths of the 2009 H1N1 and the 2003 SARS outbreaks, when compared to the same time interval since official recording started. While the number of deaths might exceed that of the other two, COVID-19’s death rate has been lower than that of the SARS outbreak.</p>
+<p><img src="image2.png" width="1000" /></p>
+<p>As of 3/2/2020, the most affected country is China, followed by South Korea, Italy, Iran, and Japan.</p>
+<p><img src="world-map.png" width="1000" /></p>
+<p>The following map shows the severity of the outbreak in different provinces in China. Hubei, the province where the virus originated, and its surrounding areas, have the most cases.</p>
+<p><img src="china-map.png" width="1000" /></p>
+</div>
+<div id="forecasting" class="section level1">
+<h1>Forecasting</h1>
+<p>Until the mid February 2020, the number of people confirmed with COVID-19 has shown a dramatic increase while the number of people who recovered has increased, but not in a significant rate.</p>
+<p><img src="image3.png" width="1000" /></p>
+<p>As of early March, more than half of the people who tested positive for the coronavirus have recovered.</p>
+</div>
+<div id="time-series-analysis" class="section level1">
+<h1>Time series analysis</h1>
+<p><img src="image4.png" width="1000" /></p>
+<p>With the growing awareness of disease, time series forecasting shows the flat prediction line of confirmed patients by April, 2020.</p>
+<p><img src="image5.png" width="1000" /></p>
+<p>Using exponential smoothing method, time series forecasting shows the increasing prediction line of confirmed patients by April, 2020.</p>
+<p><img src="image6.png" width="1000" /></p>
+<p>Using exponential smoothing method, time series forecasting shows the increasing prediction line of reported death of the patients by April, 2020.</p>
+</div>
+<div id="conclusion" class="section level1">
+<h1>Conclusion</h1>
+<p>Outbreaks of infectious diseases like the coronavirus around the world are always of public health concern. As shown in the world map created based on geostatistcal analysis, this outbreak started in China in late 2019 and by March 2020, the disease has spread to many countries around the world. The time series analysis has shown that the number of new cases will be evening out by April. However, this analysis is largely driven by cases in China and due to the novelty of coronavirus, our time series analysis has limitations. The analysis we see may be due to the fact that the number of new cases in China is evening out, but this may not necessarily be the case for other countries.</p>
+</div>
+<div id="references" class="section level1">
+<h1>References</h1>
+<ul>
+<li>“2019 Novel Coronavirus (2019-NCoV) Situation Summary.” Centers for Disease Control and Prevention. Centers for Disease Control and Prevention, March 9, 2020. <a href="https://tinyurl.com/s6aarjq" class="uri">https://tinyurl.com/s6aarjq</a>.</li>
+<li>Devakumar, K.P. “SARS 2003 Outbreak Complete Dataset.” Kaggle, February 26, 2020. <a href="https://tinyurl.com/tm9khn6" class="uri">https://tinyurl.com/tm9khn6</a>.</li>
+<li>Kumar, S.R. “Novel Corona Virus 2019 Dataset.” Kaggle, 10 Mar. 2020, <a href="https://tinyurl.com/uhglqt3" class="uri">https://tinyurl.com/uhglqt3</a>.</li>
+<li>Lyn, J.W. “Pandemic 2009 H1N1 Swine Flu Influenza A Dataset.” Kaggle, February 9, 2020. <a href="https://tinyurl.com/t63zubt" class="uri">https://tinyurl.com/t63zubt</a>.</li>
+</ul>
+</div>
+</div>
+</div>
+
+</div>
+
+
+
+</body>
+</html>

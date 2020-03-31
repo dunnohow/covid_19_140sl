@@ -1,0 +1,89 @@
+---
+title: "Insights Code"
+author: "Team 6: Trendsetters"
+date: "3/12/2020"
+output: html_document
+---
+
+## Insights Analysis ##
+
+```{r message=F}
+library(readr)
+library(dplyr)
+library(lubridate)
+library(stringr)
+library(ggplot2)
+library(tidyr)
+```
+
+```{r message=FALSE, warning=FALSE}
+covid <- read_csv("./Datasets/covid_19_data.csv")
+confirmed <- read_csv("./Datasets/time_series_covid_19_confirmed.csv")
+deaths <- read_csv("./Datasets/time_series_covid_19_deaths.csv")
+recovered <- read_csv("./Datasets/time_series_covid_19_recovered.csv")
+open.line <- read_csv("./Datasets/COVID19_open_line_list.csv")
+line <- read_csv("./Datasets/COVID19_line_list_data.csv")
+```
+
+```{r message=FALSE, warning=FALSE}
+h1n1 <- read_csv("./Datasets/Pandemic (H1N1) 2009.csv")
+sars <- read_csv("./Datasets/sars_2003_complete_dataset_clean.csv")
+```
+
+
+#### How many people died so far? What's the distribution of ages that died?
+
+```{r}
+death_ages <- line %>% filter(death != "0") %>% .$age
+recovered_ages <- line %>% filter(recovered != "0") %>% .$age
+
+dr <- c(rep("Died", 63), rep("Recovered", 159))
+drrd <- data.frame(c(death_ages, recovered_ages), dr)
+names(drrd) <-  c("age", "dr")
+
+ggplot(data=drrd, aes(x=dr, y=age)) + geom_boxplot(fill=c("red3", "green4")) + labs(x = "Status", y="Age", title="Age Distribution of Patients Who Died or Recovered") + theme(plot.title = element_text(hjust = 0.5), text = element_text(size=12)) + scale_y_continuous(breaks = round(seq(0, max(drrd$age, na.rm=TRUE), by = 10),1))
+```
+
+
+### How many patients had pneumonia/pneumonitis (which was cited as a main reason for death)?
+
+```{r}
+died <- line %>% filter(death != "0") 
+recovered <- line %>% filter(recovered != "0")
+
+died$summary %>% str_detect("pneu") %>% table() %>% prop.table()
+recovered$summary %>% str_detect("pneu") %>% table() %>% prop.table()
+```
+
+### What is the death rate over time? How does this compare to other pandemics?
+
+```{r}
+covid_rate <- covid %>% group_by(ObservationDate) %>% summarize(num_deaths = sum(Deaths), death_rate = num_deaths/sum(Confirmed)) %>% arrange(ObservationDate)
+
+h1n1_rate <- h1n1 %>% group_by(`Update Time`) %>% summarise(num_deaths = sum(Deaths), death_rate = num_deaths/sum(Cases)) %>% arrange(`Update Time`)
+
+sars_rate <- sars %>% group_by(Date) %>% summarise(num_deaths = sum(`Number of deaths`), death_rate = num_deaths/sum(`Cumulative number of case(s)`)) %>% arrange(Date)
+
+covid_rate$day_since <- as.numeric(mdy(covid_rate$ObservationDate) - mdy(covid_rate$ObservationDate[1]))
+h1n1_rate$day_since <- round(as.numeric(mdy_hm(h1n1_rate$`Update Time`) - mdy_hm(h1n1_rate$`Update Time`[1]))/86400,0)
+sars_rate$day_since <- as.numeric(ymd(sars_rate$Date) - ymd(sars_rate$Date[1]))
+
+fj <- full_join(covid_rate, h1n1_rate, by="day_since") %>% full_join(., sars_rate, by="day_since")
+jf <- fj[,c(4, 2,3,6,7,9,10)]
+names(jf) <- c("day_since", "covid_death", "covid_rate", "h1n1_death", "h1n1_rate", "sars_death", "sars_rate")
+
+jf$h1n1_death <- fill(data.frame(jf$h1n1_death), jf.h1n1_death) %>% .$jf.h1n1_death
+jf$h1n1_rate <- fill(data.frame(jf$h1n1_rate), jf.h1n1_rate) %>% .$jf.h1n1_rate
+jf$h1n1_death[44:102] <- NA
+
+jf$sars_death <- fill(data.frame(jf$sars_death), jf.sars_death) %>% .$jf.sars_death
+jf$sars_rate <- fill(data.frame(jf$sars_rate), jf.sars_rate) %>% .$jf.sars_rate
+jf$sars_death[44:102] <- NA
+
+jf$h1n1_death[c(38,39)] <- 526
+
+
+plot(jf$day_since, jf$covid_rate, type="l", col="orange", xlim=c(1, 40), ylim=c(0,0.07), main = "Death Rate (over # of confirmed cases): Covid-19 vs. H1N1 vs. SARS", xlab = "Days Since First Record Started", ylab="Num. of Deaths")
+lines(jf$day_since, jf$h1n1_rate, type="l", col = "red")
+lines(jf$day_since, jf$sars_rate, type="l", col = "purple")
+```

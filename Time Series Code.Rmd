@@ -1,0 +1,283 @@
+---
+title: "Time Series Code"
+author: "Team 6: Trendsetters"
+date: "3/12/2020"
+output: html_document
+---
+
+## Time Series Analysis ##
+
+```{r message=FALSE}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(vars)
+library(tseries)
+```
+
+```{r}
+corona2 <- read.csv("./Datasets/COVID19_open_line_list.csv")
+corona3 <- read.csv("./Datasets/time_series_covid_19_confirmed.csv", header = TRUE)
+corona4 <- read.csv("./Datasets/time_series_covid_19_deaths.csv", header = TRUE)
+corona5 <- read.csv("./Datasets/time_series_covid_19_recovered.csv", header = TRUE)
+corona6 <- read.csv("./Datasets/covid_19_data.csv", header = TRUE)
+corona7 <- read.csv("./Datasets/recentcorona.csv", header = TRUE)
+
+corona3 <-  gather(corona3, date, confirmed, X1.22.20:X2.20.20, factor_key=TRUE)
+corona3$date <- gsub("X","", corona3$date)
+corona3$date <- as.Date(corona3$date, "%m.%d.%Y")
+corona3$date <- gsub("0020","2020", corona3$date)
+corona3$date <- as.Date(corona3$date, "%Y-%m-%d")
+
+corona4 <-  gather(corona4, date, deaths, X1.22.20:X2.20.20, factor_key=TRUE)
+corona4$date <- gsub("X","", corona4$date)
+corona4$date <- as.Date(corona4$date, "%m.%d.%Y")
+corona4$date <- gsub("0020","2020", corona4$date)
+corona4$date <- as.Date(corona4$date, "%Y-%m-%d")
+
+corona5 <-  gather(corona5, date, recovered, X1.22.20:X2.20.20, factor_key=TRUE)
+corona5$date <- gsub("X","", corona5$date)
+corona5$date <- as.Date(corona5$date, "%m.%d.%Y")
+corona5$date <- gsub("0020","2020", corona5$date)
+corona5$date <- as.Date(corona5$date, "%Y-%m-%d")
+
+corona6$ObservationDate <- as.Date(corona6$ObservationDate, "%m/%d/%Y")
+
+corona3$deaths <- corona4$deaths
+corona3$recovered <- corona5$recovered
+
+world <- corona6 %>% group_by(ObservationDate) %>% mutate(sum_deaths = sum(Deaths), sum_confirmed = sum(Confirmed), sum_recovered = sum(Recovered))
+world <- world %>% filter(Country.Region == "South Korea")
+world %>%
+  ggplot(aes(x = ObservationDate)) + 
+  geom_line(aes(y = sum_confirmed, colour = "confirmed")) + 
+  geom_line(aes(y = sum_deaths, colour = "deaths")) +
+  geom_line(aes(y = sum_recovered, colour ="recovered")) +
+  scale_color_manual(values = c(confirmed="orange", deaths="red", recovered="green" )) +
+  labs(color="Status") +
+  xlab('Time') +
+  ylab('Count') +
+  ggtitle("Global Corona Infection count")
+corona2$country <- as.character(corona2$country)
+```
+
+```{r}
+ct <- world[,c("ObservationDate", "sum_deaths", "sum_confirmed", "sum_recovered")]
+
+plot.ts(ct)
+
+#Divide into train and test
+inds <- seq(as.Date("2020-01-22"), as.Date("2020-03-02"), by = "day")
+timedata = ts(ct[,-1], start = c(2020, as.numeric(format(inds[1], "%j"))),frequency=365)
+plot.ts(timedata)
+time.c <- timedata[,2]
+time.d <- timedata[,1]
+time.r <- timedata[,3]
+```
+
+```{r}
+###############
+#Regular differencing for confirmed
+
+reg.diff=diff(time.c, lag=1,diff=1)
+
+acf(reg.diff,lag=50)
+
+# conclusion : regular differencing is enough for confirmed
+c.diff <- reg.diff
+
+###############
+#Regular differencing for recovered
+
+reg.diff=diff(time.r, lag=1,diff=1)
+
+acf(reg.diff,lag=50)
+
+#Seasonal differencing for recovered
+
+seas.diff=diff(time.r, lag=7,diff=1)
+
+acf(seas.diff,lag=50)
+
+
+#Regular seasonal differencing for recovered
+
+seas.reg.diff=diff(reg.diff, lag=7,diff=1)
+
+acf(seas.reg.diff,lag=50)
+
+
+##See acf plot of each differencing method
+
+par(mfrow=c(3,1))
+
+acf(reg.diff,lag=50, main="reg only diff")
+
+acf(seas.diff,lag=50,main="seas only diff")
+
+acf(seas.reg.diff,lag=50,main="reg and seas diff")
+
+# when convinced, type 
+
+dev.off() 
+# conclusion : regular seasonal differencing is enough for recovered
+r.diff <- seas.reg.diff
+
+#Regular differencing for deaths
+
+reg.diff=diff(time.d, lag=1,diff=1)
+
+acf(reg.diff,lag=50)
+
+#Seasonal differencing for deaths
+
+seas.diff=diff(time.d, lag=7,diff=1)
+
+acf(seas.diff,lag=50)
+
+#Regular seasonal differencing for death
+
+seas.reg.diff=diff(reg.diff, lag=7,diff=1)
+
+acf(seas.reg.diff,lag=50)
+
+
+##See acf plot of each differencing method
+
+par(mfrow=c(3,1))
+
+acf(reg.diff,lag=50, main="reg only diff")
+
+acf(seas.diff,lag=50,main="seas only diff")
+
+acf(seas.reg.diff,lag=50,main="reg and seas diff")
+
+# when convinced, type 
+
+dev.off() 
+
+# conclusion : regular seasonal differencing is enough for death
+d.diff <- seas.reg.diff
+```
+
+### Time Series Modeling ###
+```{r}
+#ARIMA Model
+par(mfrow = c(2,1))
+acf(time.c)
+pacf(time.c)
+dev.off()
+
+acf(c.diff)
+
+model.c=arima(time.c,order=c(1,1,0), seas=list(order=c(0,0,0),7))
+par(mfrow = c(3,1))
+acf(residuals(model.c),main="ACF of residuals of  model.c")
+pacf(residuals(model.c),main="ACF of residuals of  model.c")
+acf(residuals(model.c)^2,main="ACF of squared residuals of  model.c")
+dev.off()
+Box.test(residuals(model.c),lag=12,type="Ljung-Box")
+model.c$coef
+
+#AIC, and Sigma squared
+model.c
+
+#Plotting Arima for confirmed
+LT.forecast = predict(model.c,7)$pred
+
+LT.forecast.se = predict(model.c,7)$se
+
+inds <- seq(as.Date("2020-03-3"), as.Date("2020-03-9"), by = "day")
+predict.val = ts(LT.forecast, start = c(2020, as.numeric(format(inds[1], "%j"))),frequency=365)
+ci.low = ts(LT.forecast - 1.96*LT.forecast.se, start = c(2020, as.numeric(format(inds[1], "%j"))),frequency=365)
+ci.high = ts(LT.forecast + 1.96*LT.forecast.se,start = c(2020, as.numeric(format(inds[1], "%j"))),frequency=365)
+
+ts.plot(cbind(time.c, predict.val,ci.low, ci.high), 
+        lty=c(1,1,2,2), col=c("black", "red","blue","blue"),
+        main = "COVID-19 confirmed patients using Arima",
+        ylab = "Confirmed",
+        xlab = "Week")
+legend("bottomright", legend=c("Confirmed","forecast","Prediction Interval"), lty=c(1,1,2), col=c("black", "red","blue"))
+
+sqrt(sum((LT.forecast- corona7$Confirmed)^2) / length(LT.forecast))
+
+#Exponential smoothing for deaths
+es = HoltWinters(time.c, gamma = FALSE)
+es
+
+Box.test(residuals(es),lag=12,type="Ljung-Box")
+acf(residuals(es))
+pacf(residuals(es))
+fitted.es = fitted(es)
+LT.forecast.es.c= predict(es, n.ahead = 7, prediction.interval = TRUE)
+ts.plot(time.c, LT.forecast.es.c,lty=c(1,1,2,2), col=c(1,2,3,3), xlab = "Week", ylab="Weekly Corona Confirmed", main = "COVID-19 Confirm using Exp Smoothing")
+legend("bottomright", legend=c("Confirmed","forecast","Prediction Interval"), lty=c(1,1,2), col=1:3)
+
+sqrt(sum((LT.forecast.es.c[,1]- corona7$Confirmed)^2) / length(LT.forecast.es.c))
+```
+
+\[
+  \begin{aligned}
+  y_t = \gamma_{0t} + \gamma_{1,t}t + w_t  \\
+  \hat{\gamma_{0t}} = \hat{\gamma_{0,t-1}} + 1(y_{t-1} - \hat{\gamma_{0,t-1}}) + \hat{\gamma_{1,t-1}} \\
+  \hat{\gamma_{1,t}} = 0.262(\hat{\gamma_{0t}} - \hat{\gamma_{0,t-1}}) + (1 - 0.262)\hat{\gamma_{1,t-1}}
+  \end{aligned}
+  \]
+
+```{r}
+#Exponential smoothing for recovered
+es = HoltWinters(time.r, gamma = FALSE)
+es
+
+Box.test(residuals(es),lag=12,type="Ljung-Box")
+
+plot(es)
+fitted.es = fitted(es)
+plot(fitted.es)
+LT.forecast.es.r= predict(es, n.ahead = 7, prediction.interval = TRUE)
+ts.plot(time.r, LT.forecast.es.r,lty=c(1,1,2,2), col=c(1,2,3,3), xlab = "Week", ylab="Weekly Corona confirmed", main = "COVID-19 recovered patients using Exp Smoothing")
+legend("bottomright", legend=c("Confirmed","forecast","Prediction Interval"), lty=c(1,1,2), col=1:3)
+
+sqrt(sum((LT.forecast.es.r[,1]- corona7$Recovered)^2) / length(LT.forecast.es.r))
+```
+
+\[
+  \begin{aligned}
+  y_t = \gamma_{0t} + \gamma_{1,t}t + w_t \\
+  \hat{\gamma_{0t}} = \hat{\gamma_{0,t-1}} + 0.487(y_{t-1} - \hat{\gamma_{0,t-1}}) + \hat{\gamma_{1,t-1}} \\
+  \hat{\gamma_{1,t}} = (\hat{\gamma_{0t}} - \hat{\gamma_{0,t-1}})
+  \end{aligned}
+  \]
+
+```{r}
+#Exponential smoothing for deaths
+
+es = HoltWinters(time.d, gamma = FALSE)
+es
+
+Box.test(residuals(es),lag=12,type="Ljung-Box")
+
+plot(es)
+fitted.es = fitted(es)
+plot(fitted.es)
+LT.forecast.es.d= predict(es, n.ahead = 7, prediction.interval = TRUE)
+ts.plot(time.d, LT.forecast.es.d,lty=c(1,1,2,2), col=c(1,2,3,3), xlab = "Week", ylab="Weekly Corona death", main = "COVID-19 death using Exp Smoothing")
+legend("bottomright", legend=c("Death","forecast","Prediction Interval"), lty=c(1,1,2), col=1:3)
+
+sqrt(sum((LT.forecast.es.d[,1]- corona7$Death)^2) / length(LT.forecast.es.d))
+```
+
+$$
+  \begin{aligned}
+y_t = \gamma_{0t} + \gamma_{1,t}t + w_t  \\
+\hat{\gamma_{0t}} = \hat{\gamma_{0,t-1}} + 0.572(y_{t-1} - \hat{\gamma_{0,t-1}}) + \hat{\gamma_{1,t-1}} \\
+\hat{\gamma_{1,t}} = 0.536(\hat{\gamma_{0t}} - \hat{\gamma_{0,t-1}}) + (1 - 0.536)\hat{\gamma_{1,t-1}}
+\end{aligned}
+$$
+  
+To achieve stationarity on all the data, I used normal and seasonal differencing to erase the autocorrelation between residuals. P-values from all the Ljung Box test were 0.9987, 0.9512, 0.4011 which stayed in the H0 of no autocorrelation. RMSE of Predicted values from Confirmed count was 3936.479, Recover count was 914.5039, and Death count was 150.4928.
+
+```{r}
+ts.plot(cbind(time.c, time.d, time.r), cbind(LT.forecast.es.c[,1], LT.forecast.es.d[,1], LT.forecast.es.r[,1]),lty=c(1,1,1,2,2,2), col=c(1,2,3,4,4,4), xlab = "Week", ylab="Patient Count", main = "COVID-19 prediction using Exp Smoothing")
+legend("topleft", legend=c("Confirmed","Death", "Recovered", "Prediction"), lty=c(1,1,1,2), col=1:4)
+```
